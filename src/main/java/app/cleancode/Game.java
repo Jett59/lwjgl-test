@@ -8,8 +8,7 @@ import org.lwjgl.system.*;
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
 import app.cleancode.input.keyboard.GameKeyCallback;
-import app.cleancode.shape.Rectangle2D;
-import app.cleancode.shape.Shape2D;
+import app.cleancode.shape.Shape3D;
 
 import java.nio.*;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings("unused")
 public class Game implements Runnable {
-	private Map<String, Shape2D> shapes = new HashMap<>();
+	private Map<String, Shape3D> shapes = new HashMap<>();
 	private List<GameListener> listeners = Arrays.asList(new GameListener[] {
 			
 	});
@@ -82,7 +81,7 @@ public void loop() {
 	for(GameListener listener : listeners) {
 		listener.loop(ctx);
 	}
-	for(Shape2D shape : shapes.values()) {
+	for(Shape3D shape : shapes.values()) {
 		shape.draw();
 	}
 	glfwSwapBuffers(window_handle);
