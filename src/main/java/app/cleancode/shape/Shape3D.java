@@ -2,7 +2,9 @@ package app.cleancode.shape;
 
 import static org.lwjgl.opengl.GL11.*;
 
-public abstract class Shape3D {
+import app.cleancode.graphics.Drawable;
+
+public abstract class Shape3D implements Drawable {
 protected void draw(float[] color, float[][] mat, int mode) {
 	if(color == null || color.length != 3) {
 		throw new IllegalArgumentException("color must be an array of three elements (rgb)");
@@ -20,5 +22,4 @@ protected void draw(float[] color, float[][] mat, int mode) {
 	}
 	glEnd();
 }
-public abstract void draw();
 }

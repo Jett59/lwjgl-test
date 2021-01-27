@@ -7,6 +7,8 @@ import org.lwjgl.system.*;
 
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
+import app.cleancode.game.penguin.PenguinLoader;
+import app.cleancode.graphics.Drawable;
 import app.cleancode.input.keyboard.GameKeyCallback;
 import app.cleancode.shape.Shape3D;
 
@@ -25,11 +27,11 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings("unused")
 public class Game implements Runnable {
-	private Map<String, Shape3D> shapes = new HashMap<>();
+	private Map<String, Drawable> drawables = new HashMap<>();
 	private List<GameListener> listeners = Arrays.asList(new GameListener[] {
-			
+			new PenguinLoader()
 	});
-	private GameContext ctx = new GameContext(shapes::get, shapes::put);
+	private GameContext ctx = new GameContext(drawables::get, drawables::put);
 public long window_handle;
 
 public static void main(String[] args) {
@@ -68,7 +70,7 @@ public void beginLoop() {
 	GL.createCapabilities();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 2048, 1536, 0, 1, -1);
+	glOrtho(0, 1048576, 1048576, 0, 0, -1048576);
 	glMatrixMode(GL_MODELVIEW);
 	glClearColor(0f, 0f, 0f, 0f);
 	while(!glfwWindowShouldClose(window_handle)) {
@@ -81,7 +83,7 @@ public void loop() {
 	for(GameListener listener : listeners) {
 		listener.loop(ctx);
 	}
-	for(Shape3D shape : shapes.values()) {
+	for(Drawable shape : drawables.values()) {
 		shape.draw();
 	}
 	glfwSwapBuffers(window_handle);

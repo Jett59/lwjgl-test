@@ -1,4 +1,4 @@
-package app.cleancode.shape;
+package app.cleancode.graphics;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
  * InputStreamReader fr = new InputStreamReader(new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(ref)));
  * BufferedReader br = new BufferedReader(fr);
  */
-public class Obj3D {
+public class Obj3D implements Drawable {
 	private ArrayList<float[]> vertexsets = new ArrayList<>();
 	private ArrayList<float[]> vertexsetsnorms = new ArrayList<>();
 	private ArrayList<float[]> vertexsetstexs = new ArrayList<>();
@@ -30,15 +30,14 @@ public class Obj3D {
 	public Obj3D(BufferedReader ref) {
 		loadobject(ref);
 		prepareDraw();
+		numpolys = faces.size();
 	}
 
 	private void loadobject(BufferedReader br) {
-		int linecounter = 0;
 		try {
 			String newline;
 			boolean firstpass = true;
 			while (((newline = br.readLine()) != null)) {
-				linecounter++;
 				newline = newline.trim();
 				if (newline.length() > 0) {
 					if (newline.charAt(0) == 'v' && newline.charAt(1) == ' ') {

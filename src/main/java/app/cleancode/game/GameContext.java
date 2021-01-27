@@ -3,22 +3,24 @@ package app.cleancode.game;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import app.cleancode.shape.Shape3D;
+import app.cleancode.graphics.Drawable;
 
 public class GameContext {
-private final Function<String, Shape3D> getShape;
-private final BiConsumer<String, Shape3D> addShape;
+private final Function<String, Drawable> getDrawable;
+private final BiConsumer<String, Drawable> addDrawable;
 
-public Shape3D getShape(String name) {
-	return getShape.apply(name);
+@SuppressWarnings("unchecked")
+public <T extends Drawable> T getDrawable(String name) {
+	Drawable result = getDrawable.apply(name);
+		return (T)result;
 }
 
-public void addShape(String name, Shape3D shape) {
-	addShape.accept(name, shape);
+public void addDrawable(String name, Drawable drawable) {
+	addDrawable.accept(name, drawable);
 }
 
-public GameContext(Function<String, Shape3D> getShape, BiConsumer<String, Shape3D> addShape) {
-	this.getShape = getShape;
-	this.addShape = addShape;
+public GameContext(Function<String, Drawable> getDrawable, BiConsumer<String, Drawable> addDrawable) {
+	this.getDrawable = getDrawable;
+	this.addDrawable = addDrawable;
 }
 }
