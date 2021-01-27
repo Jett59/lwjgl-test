@@ -70,9 +70,9 @@ public void beginLoop() {
 	GL.createCapabilities();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 1048576, 1048576, 0, 0, -1048576);
+	glOrtho(0, 5, 10, 0, 0, -2048);
 	glMatrixMode(GL_MODELVIEW);
-	glClearColor(0f, 0f, 0f, 0f);
+	glClearColor(1f, 1f, 1f, 0f);
 	while(!glfwWindowShouldClose(window_handle)) {
 		loop();
 	}

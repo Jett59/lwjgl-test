@@ -158,7 +158,9 @@ public class Obj3D implements Drawable {
 			} else {
 	polytype = GL11.GL_POLYGON;
 	}
+			GL11.glColor3f(0, 0, 0);
 			GL11.glBegin(polytype);
+			
 			for (int w=0;w<tempfaces.length;w++) {
 				if (tempfacesnorms[w] != 0) {
 					float normtempx = ((float[])vertexsetsnorms.get(tempfacesnorms[w] - 1))[0];
