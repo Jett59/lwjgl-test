@@ -5,7 +5,19 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import app.cleancode.game.GameContext;
+import app.cleancode.game.GameListener;
+import app.cleancode.game.snake.SnakeController;
+import app.cleancode.input.keyboard.GameKeyCallback;
+import app.cleancode.shape.Rectangle2D;
+import app.cleancode.shape.Shape2D;
+
 import java.nio.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -15,6 +27,11 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings("unused")
 public class Game implements Runnable {
+	private Map<String, Shape2D> shapes = new HashMap<>();
+	private List<GameListener> listeners = Arrays.asList(new GameListener[] {
+			new SnakeController()
+	});
+	private GameContext ctx = new GameContext(shapes::get, shapes::put);
 public long window_handle;
 
 public static void main(String[] args) {
@@ -44,7 +61,7 @@ public void init() {
 	if(window_handle == NULL) {
 		throw new RuntimeException("failed to create the window!");
 	}
-	glfwSetKeyCallback(window_handle, new GameKeyCallback());
+	glfwSetKeyCallback(window_handle, new GameKeyCallback(this::handleKey));
 	glfwMakeContextCurrent(window_handle);
 	glfwSwapInterval(1);
 	glfwShowWindow(window_handle);
@@ -53,24 +70,29 @@ public void beginLoop() {
 	GL.createCapabilities();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 640, 480, 0, 1, -1);
+	glOrtho(0, 2048, 1536, 0, 1, -1);
 	glMatrixMode(GL_MODELVIEW);
 	glClearColor(0f, 0f, 0f, 0f);
 	while(!glfwWindowShouldClose(window_handle)) {
 		loop();
 	}
 }
+
 public void loop() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3f(0f, 0f, 1f);
-	glBegin(GL_QUADS);
-	glVertex2f(0, 0);
-	glVertex2f(0, 240);
-	glVertex2f(320, 240);
-	glVertex2f(320, 0);
-	glEnd();
+	for(GameListener listener : listeners) {
+		listener.loop(ctx);
+	}
+	for(Shape2D shape : shapes.values()) {
+		shape.draw();
+	}
 	glfwSwapBuffers(window_handle);
 
 	glfwPollEvents();
+}
+public void handleKey(int key, int action) {
+	for(GameListener listener : listeners) {
+		listener.handleKey(key, action, ctx);
+	}
 }
 }
