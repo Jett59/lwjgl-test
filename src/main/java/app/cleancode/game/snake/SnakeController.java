@@ -37,6 +37,8 @@ private float xVelocity, yVelocity;
 		}else if(key == GLFW_KEY_RIGHT) {
 			xVelocity = SPEED;
 			yVelocity = 0;
+		}else if (key == GLFW_KEY_SPACE) {
+			snake.addNew();
 		}
 	}
 		System.out.printf("%f,  %f\n", xVelocity, yVelocity);
