@@ -7,7 +7,6 @@ import org.lwjgl.system.*;
 
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
-import app.cleancode.game.snake.SnakeController;
 import app.cleancode.input.keyboard.GameKeyCallback;
 import app.cleancode.shape.Rectangle2D;
 import app.cleancode.shape.Shape2D;
@@ -29,7 +28,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Game implements Runnable {
 	private Map<String, Shape2D> shapes = new HashMap<>();
 	private List<GameListener> listeners = Arrays.asList(new GameListener[] {
-			new SnakeController()
+			
 	});
 	private GameContext ctx = new GameContext(shapes::get, shapes::put);
 public long window_handle;
