@@ -11,9 +11,7 @@ private Obj3D penguin;
 	@Override
 	public void loop(GameContext ctx) {
 		if(penguin == null) {
-			ctx.addDrawable("Penguin", (penguin = ZobjLoader.load("penguin")));
-			System.out.println("loaded penguin!");
-			System.out.println(penguin.getXWidth());
+			ctx.addDrawable("Penguin", (penguin = ZobjLoader.load("penguin", 0)));
 		}
 	}
 

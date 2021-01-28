@@ -9,6 +9,7 @@ import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
 import app.cleancode.game.penguin.PenguinLoader;
 import app.cleancode.graphics.Drawable;
+import app.cleancode.graphics.shaders.ShaderLoader;
 import app.cleancode.input.keyboard.GameKeyCallback;
 import app.cleancode.shape.Shape3D;
 
@@ -70,9 +71,11 @@ public void beginLoop() {
 	GL.createCapabilities();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, 5, 10, 0, 0, -2048);
+	glOrtho(-5, 5, 0, 6.5, 1, -1);
 	glMatrixMode(GL_MODELVIEW);
 	glClearColor(1f, 1f, 1f, 0f);
+	ARBShaderObjects.glUseProgramObjectARB(ShaderLoader.getShaders("default"));
+	ShaderLoader.createShaderUniform("default", "texture_sampler");
 	while(!glfwWindowShouldClose(window_handle)) {
 		loop();
 	}

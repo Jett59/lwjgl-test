@@ -2,6 +2,9 @@ package app.cleancode.graphics;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+
+import app.cleancode.graphics.shaders.ShaderLoader;
 /**
  * @author Jeremy Adams (elias4444)
  *
@@ -27,9 +30,13 @@ public class Obj3D implements Drawable {
 	public float rightpoint = 0;
 	public float farpoint = 0;
 	public float nearpoint = 0;
-	public Obj3D(BufferedReader ref) {
+	private final int textureSamplerId;
+	public int textureId;
+
+	public Obj3D(BufferedReader ref, int textureSamplerId, int textureId) {
+		this.textureSamplerId = textureSamplerId;
+		this.textureId = textureId;
 		loadobject(ref);
-		prepareDraw();
 		numpolys = faces.size();
 	}
 
@@ -146,6 +153,8 @@ public class Obj3D implements Drawable {
 	public void prepareDraw() {
 		this.objectlist = GL11.glGenLists(1);
 		GL11.glNewList(objectlist,GL11.GL_COMPILE);
+		GL30.glActiveTexture(GL30.GL_TEXTURE0);
+		GL30.glBindTexture(GL30.GL_TEXTURE_2D, textureId);
 		for (int i=0;i<faces.size();i++) {
 			int[] tempfaces = faces.get(i);
 			int[] tempfacesnorms = facesnorms.get(i);
@@ -184,6 +193,7 @@ public class Obj3D implements Drawable {
 		GL11.glEndList();
 	}
 	public void draw() {
+		ShaderLoader.setShaderUniform("texture_sampler", textureSamplerId);
 		GL11.glCallList(objectlist);
 	}
 }
