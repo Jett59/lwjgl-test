@@ -5,10 +5,12 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import app.cleancode.game.Camera;
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
 import app.cleancode.game.penguin.PenguinLoader;
-import app.cleancode.graphics.Drawable;
+import app.cleancode.game.penguin.PenguinMover;
+import app.cleancode.graphics.Node;
 import app.cleancode.graphics.shaders.ShaderLoader;
 import app.cleancode.input.keyboard.GameKeyCallback;
 import app.cleancode.shape.Shape3D;
@@ -28,18 +30,23 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 @SuppressWarnings("unused")
 public class Game implements Runnable {
-	private Map<String, Drawable> drawables = new HashMap<>();
+	private Map<String, Node> drawables = new HashMap<>();
 	private List<GameListener> listeners = Arrays.asList(new GameListener[] {
-			new PenguinLoader()
+			new PenguinLoader(),
+			new PenguinMover()
 	});
-	private GameContext ctx = new GameContext(drawables::get, drawables::put);
+	private Camera camera;
+	private GameContext ctx = new GameContext(drawables::get, drawables::put, ()->camera);
 public long window_handle;
 
 public static void main(String[] args) {
 	Game game = new Game();
 	game.run();
 }
-
+public Game() {
+	camera = new Camera();
+	camera.setZoom(1);
+}
 @Override
 public void run() {
 	init();
@@ -71,22 +78,36 @@ public void beginLoop() {
 	GL.createCapabilities();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-5, 5, 0, 6.5, 1, -1);
+	glOrtho(-1, 1, -1, 1, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
-	glClearColor(1f, 1f, 1f, 0f);
+	glClearColor(1f, 0f, 1f, 0f);
 	ARBShaderObjects.glUseProgramObjectARB(ShaderLoader.getShaders("default"));
 	ShaderLoader.createShaderUniform("default", "texture_sampler");
+	ShaderLoader.createShaderUniform("default", "cameraZoom");
+	ShaderLoader.createShaderUniform("default", "translateX");
+	ShaderLoader.createShaderUniform("default", "translateY");
+	ShaderLoader.createShaderUniform("default", "translateZ");
+	long maxFps = 60;
+	long fpsIncrementNanos = 1000000000/60;
+	long nextFrame = System.nanoTime()+fpsIncrementNanos;
 	while(!glfwWindowShouldClose(window_handle)) {
+		if(nextFrame <= System.nanoTime()+fpsIncrementNanos) {
 		loop();
+		nextFrame = System.nanoTime()+fpsIncrementNanos;
+		}
 	}
 }
 
 public void loop() {
+	if(camera.isChanged()) {
+		ShaderLoader.setShaderUniform("cameraZoom", camera.getZoom());
+		camera.setChanged(false);
+	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for(GameListener listener : listeners) {
 		listener.loop(ctx);
 	}
-	for(Drawable shape : drawables.values()) {
+	for(Node shape : drawables.values()) {
 		shape.draw();
 	}
 	glfwSwapBuffers(window_handle);

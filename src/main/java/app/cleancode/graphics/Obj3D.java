@@ -1,199 +1,189 @@
 package app.cleancode.graphics;
+
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
+import java.util.List;
+import org.lwjgl.system.MemoryUtil;
 
-import app.cleancode.graphics.shaders.ShaderLoader;
-/**
- * @author Jeremy Adams (elias4444)
- *
- * Use these lines if reading from a file
- * FileReader fr = new FileReader(ref);
- * BufferedReader br = new BufferedReader(fr);
- * Use these lines if reading from within a jar
- * InputStreamReader fr = new InputStreamReader(new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(ref)));
- * BufferedReader br = new BufferedReader(fr);
- */
-public class Obj3D implements Drawable {
-	private ArrayList<float[]> vertexsets = new ArrayList<>();
-	private ArrayList<float[]> vertexsetsnorms = new ArrayList<>();
-	private ArrayList<float[]> vertexsetstexs = new ArrayList<>();
-	private ArrayList<int[]> faces = new ArrayList<>();
-	private ArrayList<int[]> facestexs = new ArrayList<>();
-	private ArrayList<int[]> facesnorms = new ArrayList<>();
-	private int objectlist;
-	private int numpolys = 0;
-	public float toppoint = 0;
-	public float bottompoint = 0;
-	public float leftpoint = 0;
-	public float rightpoint = 0;
-	public float farpoint = 0;
-	public float nearpoint = 0;
-	private final int textureSamplerId;
+import static org.lwjgl.opengl.GL30.*;
+
+public class Obj3D extends Node {
+private int vao = 0;
+private int numVbos = 0;
+private List<Integer> vbos;
+private List<List<float[][]>> faces;
 	public int textureId;
+	private boolean ready = false;
+	private int numVertices = 0;
 
-	public Obj3D(BufferedReader ref, int textureSamplerId, int textureId) {
-		this.textureSamplerId = textureSamplerId;
+	public Obj3D(BufferedReader reader, int textureSamplerId, int textureId) throws IOException {
 		this.textureId = textureId;
-		loadobject(ref);
-		numpolys = faces.size();
+		this.vbos = new ArrayList<>();
+		this.faces = new ArrayList<>();
+		load(reader);
 	}
 
-	private void loadobject(BufferedReader br) {
-		try {
-			String newline;
-			boolean firstpass = true;
-			while (((newline = br.readLine()) != null)) {
-				newline = newline.trim();
-				if (newline.length() > 0) {
-					if (newline.charAt(0) == 'v' && newline.charAt(1) == ' ') {
-						float[] coords = new float[4];
-						String[] coordstext = new String[4];
-						coordstext = newline.split("\\s+");
-						for (int i = 1;i < coordstext.length;i++) {
-							coords[i-1] = Float.valueOf(coordstext[i]).floatValue();
-						}
-						if (firstpass) {
-							rightpoint = coords[0];
-							leftpoint = coords[0];
-							toppoint = coords[1];
-							bottompoint = coords[1];
-							nearpoint = coords[2];
-							farpoint = coords[2];
-							firstpass = false;
-						}
-						if (coords[0] > rightpoint) {
-							rightpoint = coords[0];
-						}
-						if (coords[0] < leftpoint) {
-							leftpoint = coords[0];
-						}
-						if (coords[1] > toppoint) {
-							toppoint = coords[1];
-						}
-						if (coords[1] < bottompoint) {
-							bottompoint = coords[1];
-						}
-						if (coords[2] > nearpoint) {
-							nearpoint = coords[2];
-						}
-						if (coords[2] < farpoint) {
-							farpoint = coords[2];
-						}
-						vertexsets.add(coords);
-					}
-					if (newline.charAt(0) == 'v' && newline.charAt(1) == 't') {
-						float[] coords = new float[4];
-						String[] coordstext = new String[4];
-						coordstext = newline.split("\\s+");
-						for (int i = 1;i < coordstext.length;i++) {
-							coords[i-1] = Float.valueOf(coordstext[i]).floatValue();
-						}
-						vertexsetstexs.add(coords);
-					}
-					if (newline.charAt(0) == 'v' && newline.charAt(1) == 'n') {
-						float[] coords = new float[4];
-						String[] coordstext = new String[4];
-						coordstext = newline.split("\\s+");
-						for (int i = 1;i < coordstext.length;i++) {
-							coords[i-1] = Float.valueOf(coordstext[i]).floatValue();
-						}
-						vertexsetsnorms.add(coords);
-					}
-					if (newline.charAt(0) == 'f' && newline.charAt(1) == ' ') {
-						String[] coordstext = newline.split("\\s+");
-						int[] v = new int[coordstext.length - 1];
-						int[] vt = new int[coordstext.length - 1];
-						int[] vn = new int[coordstext.length - 1];
-						for (int i = 1;i < coordstext.length;i++) {
-							String fixstring = coordstext[i].replaceAll("//","/0/");
-							String[] tempstring = fixstring.split("/");
-							v[i-1] = Integer.valueOf(tempstring[0]).intValue();
-							if (tempstring.length > 1) {
-								vt[i-1] = Integer.valueOf(tempstring[1]).intValue();
-							} else {
-								vt[i-1] = 0;
-							}
-							if (tempstring.length > 2) {
-								vn[i-1] = Integer.valueOf(tempstring[2]).intValue();
-							} else {
-								vn[i-1] = 0;
-							}
-						}
-						faces.add(v);
-						facestexs.add(vt);
-						facesnorms.add(vn);
-					}
+public void load(BufferedReader reader) throws IOException {
+	String line = null;
+	List<float[]> vertices = new ArrayList<>();
+	List<float[]> textureVertices = new ArrayList<>();
+	List<float[]> vertexNormals = new ArrayList<>();
+	List<List<float[][]>> faces = new ArrayList<>();
+	while((line = reader.readLine()) != null) {
+		line = line.trim();
+		if(line.startsWith("v ")) {
+			String[] coords = line.split(" +");
+			if(coords.length > 3) {
+				float x = Float.parseFloat(coords[1]);
+				float y = Float.parseFloat(coords[2]);
+				float z = Float.parseFloat(coords[3]);
+				float w;
+				if(coords.length > 4) {
+					w = Float.parseFloat(coords[4]);
+				}else {
+					w = 1f;
+				}
+				vertices.add(new float[] {x, y, z, w});
+			}
+		}else if(line.startsWith("vn")) {
+			String[] coords = line.split(" +");
+			if(coords.length > 3) {
+				float x = Float.parseFloat(coords[1]);
+				float y = Float.parseFloat(coords[2]);
+				float z = Float.parseFloat(coords[3]);
+				float w;
+				if(coords.length > 4) {
+					w = Float.parseFloat(coords[4]);
+				}else {
+					w = 1f;
+				}
+				vertexNormals.add(new float[] {x, y, z, w});
+			}
+		}else if(line.startsWith("vt")) {
+			String[] coords = line.split(" +");
+			if(coords.length > 2) {
+				float u = Float.parseFloat(coords[1]);
+				float v = Float.parseFloat(coords[2]);
+				textureVertices.add(new float[] {u, v});
+			}
+		} else if(line.startsWith("f ")) {
+			String[] vertexSets = line.split(" +");
+			List<float[][]> face = new ArrayList<>(vertexSets.length-1);
+			for(int i = 1; i < vertexSets.length; i++) {
+				String[] vertexVertices = vertexSets[i].split("/");
+				if(vertexVertices.length == 3) {
+					int vertexNum = Integer.parseInt(vertexVertices[0]);
+					int textureVertexNum = Integer.parseInt(vertexVertices[1]);
+					int vertexNormalNum = Integer.parseInt(vertexVertices[2]);
+					float[] vertex = vertices.get(vertexNum-1);
+					float[] textureVertex = textureVertices.get(textureVertexNum-1);
+					float[] vertexNormal = vertexNormals.get(vertexNormalNum-1);
+					face.add(new float[][] {vertex, textureVertex, vertexNormal});
 				}
 			}
-		} catch (Exception e) {
-			throw new RuntimeException (e);
+			faces.add(face);
 		}
 	}
+	vertices.clear();
+	textureVertices.clear();
+	vertexNormals.clear();
+	this.faces = faces;
+}
 
-	public float getXWidth() {
-		float returnval = 0;
-		returnval = rightpoint - leftpoint;
-		return returnval;
+	@Override
+	public void glDraw() {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glBindVertexArray(vao);
+		for(int i = 0; i < numVbos; i++) {
+			glEnableVertexAttribArray(i);
+		}
+		glDrawArrays(GL_TRIANGLES, 0, numVertices);
+		glBindVertexArray(0);
 	}
-	public float getYHeight() {
-		float returnval = 0;
-		returnval = toppoint - bottompoint;
-		return returnval;
-	}
-	public float getZDepth() {
-		float returnval = 0;
-		returnval = nearpoint - farpoint;
-		return returnval;
-	}
-	public int numpolygons() {
-		return numpolys;
-	}
+
 	public void prepareDraw() {
-		this.objectlist = GL11.glGenLists(1);
-		GL11.glNewList(objectlist,GL11.GL_COMPILE);
-		GL30.glActiveTexture(GL30.GL_TEXTURE0);
-		GL30.glBindTexture(GL30.GL_TEXTURE_2D, textureId);
-		for (int i=0;i<faces.size();i++) {
-			int[] tempfaces = faces.get(i);
-			int[] tempfacesnorms = facesnorms.get(i);
-			int[] tempfacestexs = facestexs.get(i);
-			int polytype;
-			if (tempfaces.length == 3) {
-				polytype = GL11.GL_TRIANGLES;
-			} else if (tempfaces.length == 4) {
-				polytype = GL11.GL_QUADS;
-			} else {
-	polytype = GL11.GL_POLYGON;
-	}
-			GL11.glColor3f(0, 0, 0);
-			GL11.glBegin(polytype);
-			
-			for (int w=0;w<tempfaces.length;w++) {
-				if (tempfacesnorms[w] != 0) {
-					float normtempx = ((float[])vertexsetsnorms.get(tempfacesnorms[w] - 1))[0];
-					float normtempy = ((float[])vertexsetsnorms.get(tempfacesnorms[w] - 1))[1];
-					float normtempz = ((float[])vertexsetsnorms.get(tempfacesnorms[w] - 1))[2];
-					GL11.glNormal3f(normtempx, normtempy, normtempz);
-				}
-				if (tempfacestexs[w] != 0) {;
-					float textempx = vertexsetstexs.get(tempfacestexs[w] - 1)[0];
-					float textempy = vertexsetstexs.get(tempfacestexs[w] - 1)[1];
-					float textempz = vertexsetstexs.get(tempfacestexs[w] - 1)[2];
-					GL11.glTexCoord3f(textempx,1f-textempy,textempz);
-				}
-				float tempx = vertexsets.get(tempfaces[w] - 1)[0];
-				float tempy = vertexsets.get(tempfaces[w] - 1)[1];
-				float tempz = vertexsets.get(tempfaces[w] - 1)[2];
-				GL11.glVertex3f(tempx,tempy,tempz);
-			}
-			GL11.glEnd();
+		if(ready) {
+			throw new IllegalStateException("Error: this Obj3D is already prepared for rendering");
 		}
-		GL11.glEndList();
+		int size = 0;
+		for(List<float[][]> vertices : faces) {
+			int numVertices = (vertices.size()-2)*3;
+			size+=numVertices;
+		}
+		this.numVertices = size;
+		FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(size*4);
+		FloatBuffer textureVertexBuffer = MemoryUtil.memAllocFloat(size*4);
+		for(List<float[][]> face : faces) {
+			if(face.size() >= 3) {
+				int numberTriangles = face.size()-2;
+				float[][] first = face.get(0);
+				float[][] last = null;
+				int lastIndex = 2;
+				for(int triangleNum = 0; triangleNum < numberTriangles; triangleNum++) {
+					float[][] next;
+					int nextIndex = lastIndex+1;
+					if(last == null) {
+						next = face.get(lastIndex-1);
+						last = face.get(lastIndex);
+					}else {
+						next = face.get(nextIndex);
+						lastIndex = nextIndex;
+					}
+					vertexBuffer.put(first[0]).put(last[0]).put(next[0]);
+					textureVertexBuffer.put(first[1]).put(last[1]).put(next[1]);
+					last = next;
+				}
+			}
+		}
+		vertexBuffer.flip();
+		try {
+			createVao();
+			createVbo(vertexBuffer);
+			createVbo(textureVertexBuffer);
+			bindVbos();
+		}catch (Exception e) {
+			System.err.println("error occured creating vertex buffer:");
+			e.printStackTrace();
+		}finally {
+			MemoryUtil.memFree(vertexBuffer);
+			MemoryUtil.memFree(textureVertexBuffer);
+		}
 	}
-	public void draw() {
-		ShaderLoader.setShaderUniform("texture_sampler", textureSamplerId);
-		GL11.glCallList(objectlist);
+
+	private void bindVbos() {
+		if(numVbos != vbos.size()) {
+			throw new IllegalStateException("numVbos not properly aligned with vbos.size!");
+		}
+		glBindVertexArray(vao);
+		for(int i = 0; i < numVbos; i++) {
+			int vbo = vbos.get(i);
+			glBindBuffer(GL_ARRAY_BUFFER, vbo);
+			glVertexAttribPointer(i, 4, GL_FLOAT, false, 0, vbo);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 	}
+
+	private void createVbo(FloatBuffer buffer) {
+		int vbo = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+		vbos.add(vbo);
+		numVbos++;
+	}
+
+	private void createVao() {
+		if(vao != 0) {
+			throw new IllegalStateException("vao already initialized!");
+		}
+		vao = glGenVertexArrays();
+	}
+
+	public boolean isReady() {
+		return ready;
+	}
+
 }

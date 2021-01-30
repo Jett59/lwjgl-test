@@ -7,11 +7,14 @@ import app.cleancode.graphics.zobj.ZobjLoader;
 
 public class PenguinLoader implements GameListener {
 private Obj3D penguin;
+private boolean addedPenguin = false;
 
 	@Override
 	public void loop(GameContext ctx) {
 		if(penguin == null) {
-			ctx.addDrawable("Penguin", (penguin = ZobjLoader.load("penguin", 0)));
+			penguin = ZobjLoader.load("penguin", 0);
+		}else if(!addedPenguin) {
+			ctx.addDrawable("penguin", penguin);
 		}
 	}
 
