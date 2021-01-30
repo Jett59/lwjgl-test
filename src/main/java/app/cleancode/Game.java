@@ -8,6 +8,7 @@ import org.lwjgl.system.*;
 import app.cleancode.game.Camera;
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
+import app.cleancode.game.camera.CameraZoomer;
 import app.cleancode.game.penguin.PenguinLoader;
 import app.cleancode.game.penguin.PenguinMover;
 import app.cleancode.graphics.Node;
@@ -33,7 +34,8 @@ public class Game implements Runnable {
 	private Map<String, Node> drawables = new HashMap<>();
 	private List<GameListener> listeners = Arrays.asList(new GameListener[] {
 			new PenguinLoader(),
-			new PenguinMover()
+			new PenguinMover(),
+			new CameraZoomer()
 	});
 	private Camera camera;
 	private GameContext ctx = new GameContext(drawables::get, drawables::put, ()->camera);
@@ -78,9 +80,9 @@ public void beginLoop() {
 	GL.createCapabilities();
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-1, 1, -1, 1, -1, 1);
+	glOrtho(-1000, 1000, -1000, 1000, -1000, 1000);
 	glMatrixMode(GL_MODELVIEW);
-	glClearColor(1f, 0f, 1f, 0f);
+	glClearColor(0f, 0f, 0f, 0f);
 	ARBShaderObjects.glUseProgramObjectARB(ShaderLoader.getShaders("default"));
 	ShaderLoader.createShaderUniform("default", "texture_sampler");
 	ShaderLoader.createShaderUniform("default", "cameraZoom");
@@ -88,7 +90,7 @@ public void beginLoop() {
 	ShaderLoader.createShaderUniform("default", "translateY");
 	ShaderLoader.createShaderUniform("default", "translateZ");
 	long maxFps = 60;
-	long fpsIncrementNanos = 1000000000/60;
+	long fpsIncrementNanos = 1000000000/maxFps;
 	long nextFrame = System.nanoTime()+fpsIncrementNanos;
 	while(!glfwWindowShouldClose(window_handle)) {
 		if(nextFrame <= System.nanoTime()+fpsIncrementNanos) {

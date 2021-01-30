@@ -14,6 +14,7 @@ protected abstract void glDraw();
 
 public final void draw() {
 	ShaderLoader.setShaderUniform("translateX", Float.valueOf(translateX).intValue());
+	System.out.println("translate x: "+Float.valueOf(translateX).intValue());
 	ShaderLoader.setShaderUniform("translateY", Float.valueOf(translateY).intValue());
 	ShaderLoader.setShaderUniform("translateZ", Float.valueOf(translateZ).intValue());
 	glDraw();

@@ -3,13 +3,14 @@ package app.cleancode.game.penguin;
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
 import app.cleancode.graphics.Obj3D;
+import app.cleancode.shape.Cube3D;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class PenguinMover implements GameListener {
-	public static float SPEED = 0.01f;
+	public static float SPEED = 1;
 
-private Obj3D penguin;
+private Cube3D penguin;
 private float xVelocity, yVelocity;
 
 	@Override

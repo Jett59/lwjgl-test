@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.system.MemoryUtil;
 
+import app.cleancode.memory.VBO;
+
 import static org.lwjgl.opengl.GL30.*;
 
 public class Obj3D extends Node {
 private int vao = 0;
 private int numVbos = 0;
-private List<Integer> vbos;
+private List<VBO> vbos;
 private List<List<float[][]>> faces;
 	public int textureId;
 	private boolean ready = false;
@@ -115,7 +117,7 @@ public void load(BufferedReader reader) throws IOException {
 		}
 		this.numVertices = size;
 		FloatBuffer vertexBuffer = MemoryUtil.memAllocFloat(size*4);
-		FloatBuffer textureVertexBuffer = MemoryUtil.memAllocFloat(size*4);
+		FloatBuffer textureVertexBuffer = MemoryUtil.memAllocFloat(size*2);
 		for(List<float[][]> face : faces) {
 			if(face.size() >= 3) {
 				int numberTriangles = face.size()-2;
@@ -139,10 +141,11 @@ public void load(BufferedReader reader) throws IOException {
 			}
 		}
 		vertexBuffer.flip();
+		textureVertexBuffer.flip();
 		try {
 			createVao();
-			createVbo(vertexBuffer);
-			createVbo(textureVertexBuffer);
+			createVbo(vertexBuffer, 4);
+			createVbo(textureVertexBuffer, 2);
 			bindVbos();
 		}catch (Exception e) {
 			System.err.println("error occured creating vertex buffer:");
@@ -159,19 +162,15 @@ public void load(BufferedReader reader) throws IOException {
 		}
 		glBindVertexArray(vao);
 		for(int i = 0; i < numVbos; i++) {
-			int vbo = vbos.get(i);
-			glBindBuffer(GL_ARRAY_BUFFER, vbo);
-			glVertexAttribPointer(i, 4, GL_FLOAT, false, 0, vbo);
+			VBO vbo = vbos.get(i);
+			glVertexAttribPointer(i, vbo.getElementSize(), GL_FLOAT, false, 0, vbo.getBuffer());
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
 
-	private void createVbo(FloatBuffer buffer) {
-		int vbo = glGenBuffers();
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
-		vbos.add(vbo);
+	private void createVbo(FloatBuffer buffer, int elementSize) {
+		vbos.add(new VBO(elementSize, buffer));
 		numVbos++;
 	}
 
