@@ -1,14 +1,14 @@
 package app.cleancode.game;
 
 public class Camera {
-private int zoom;
+private float zoom;
 private boolean changed;
 
-public int getZoom() {
+public float getZoom() {
 	return zoom;
 }
 
-public void setZoom(int zoom) {
+public void setZoom(float zoom) {
 	this.zoom = zoom;
 	this.changed = true;
 }

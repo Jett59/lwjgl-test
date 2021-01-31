@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.lwjgl.system.MemoryUtil;
 
@@ -127,17 +128,25 @@ public void load(BufferedReader reader) throws IOException {
 				for(int triangleNum = 0; triangleNum < numberTriangles; triangleNum++) {
 					float[][] next;
 					int nextIndex = lastIndex+1;
+					float[][] nextLast = null;
 					if(last == null) {
 						next = face.get(lastIndex-1);
 						last = face.get(lastIndex);
+						nextLast = last;
 					}else {
 						next = face.get(nextIndex);
 						lastIndex = nextIndex;
+						nextLast = next;
 					}
-					vertexBuffer.put(first[0]).put(last[0]).put(next[0]);
+			vertexBuffer.put(first[0]).put(last[0]).put(next[0]);
+					System.out.println(Arrays.toString(first[0]));
+					System.out.println(Arrays.toString(last[0]));
+					System.out.println(Arrays.toString(next[0]));
+					System.out.println();
 					textureVertexBuffer.put(first[1]).put(last[1]).put(next[1]);
-					last = next;
+					last = nextLast;
 				}
+				System.out.println();
 			}
 		}
 		vertexBuffer.flip();
@@ -151,8 +160,7 @@ public void load(BufferedReader reader) throws IOException {
 			System.err.println("error occured creating vertex buffer:");
 			e.printStackTrace();
 		}finally {
-			MemoryUtil.memFree(vertexBuffer);
-			MemoryUtil.memFree(textureVertexBuffer);
+			
 		}
 	}
 

@@ -5,6 +5,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import app.cleancode.convertion.PrimitiveConverter;
 import app.cleancode.game.Camera;
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;

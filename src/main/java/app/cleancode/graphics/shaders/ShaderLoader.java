@@ -108,4 +108,7 @@ public static void createShaderUniform(String shaderName, String uniformName) {
 public static void setShaderUniform(String name, int value) {
 	GL30.glUniform1i(uniforms.get(name), value);
 }
+public static void setShaderUniform(String name, float value) {
+	GL30.glUniform1f(uniforms.get(name), value);
+}
 }

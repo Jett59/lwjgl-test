@@ -2,15 +2,13 @@ package app.cleancode.game.penguin;
 
 import app.cleancode.game.GameContext;
 import app.cleancode.game.GameListener;
-import app.cleancode.graphics.Obj3D;
-import app.cleancode.shape.Cube3D;
-
+import app.cleancode.graphics.Node;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class PenguinMover implements GameListener {
 	public static float SPEED = 1;
 
-private Cube3D penguin;
+private Node penguin;
 private float xVelocity, yVelocity;
 
 	@Override
