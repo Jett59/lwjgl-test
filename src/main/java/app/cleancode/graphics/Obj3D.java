@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.lwjgl.system.MemoryUtil;
 
+import app.cleancode.graphics.shaders.ShaderLoader;
 import app.cleancode.memory.VBO;
 
 import static org.lwjgl.opengl.GL30.*;
@@ -99,6 +100,7 @@ public void load(BufferedReader reader) throws IOException {
 	public void glDraw() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
+		ShaderLoader.setShaderUniform("texture_sampler", 0);
 		glBindVertexArray(vao);
 		for(int i = 0; i < numVbos; i++) {
 			glEnableVertexAttribArray(i);
