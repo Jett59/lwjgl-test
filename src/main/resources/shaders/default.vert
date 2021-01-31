@@ -5,9 +5,9 @@ out vec2 outTexCoord;
 in vec3 vertex;
 
 uniform float cameraZoom;
-uniform int translateX;
-uniform int translateY;
-uniform int translateZ;
+uniform float translateX;
+uniform float translateY;
+uniform float translateZ;
 
 void main(){
 	gl_Position = vec4(vertex, 1.0);

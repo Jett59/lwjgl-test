@@ -7,13 +7,16 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class CameraZoomer implements GameListener {
 private boolean zoomingIn;
+private boolean controlDown;
 
 	@Override
 	public void loop(GameContext ctx) {
 		if(zoomingIn) {
 			ctx.getCamera().setZoom(ctx.getCamera().getZoom()+0.1f);
 		}else if(ctx.getCamera().getZoom() > 1) {
-			ctx.getCamera().setZoom(ctx.getCamera().getZoom()-0.1f);
+			if(!controlDown) {
+				ctx.getCamera().setZoom(ctx.getCamera().getZoom()-0.1f);
+			}
 		}
 	}
 
@@ -24,6 +27,12 @@ private boolean zoomingIn;
 				zoomingIn = true;
 			}else if(action == GLFW_RELEASE) {
 				zoomingIn = false;
+			}
+		}else if(key == GLFW_KEY_LEFT_CONTROL) {
+			if(action == GLFW_PRESS) {
+				controlDown = true;
+			}else if(action == GLFW_RELEASE) {
+				controlDown = false;
 			}
 		}
 	}
