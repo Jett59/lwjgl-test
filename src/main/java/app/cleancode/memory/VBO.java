@@ -1,21 +1,19 @@
 package app.cleancode.memory;
 
-import java.nio.FloatBuffer;
-
 public class VBO {
 private final int elementSize;
-private FloatBuffer buffer;
+private int id;
 
-public VBO(int elementSize, FloatBuffer buffer) {
+public VBO(int elementSize, int id) {
 	this.elementSize = elementSize;
-	this.buffer = buffer;
+	this.id = id;
 }
 
 public int getElementSize() {
 	return elementSize;
 }
 
-public FloatBuffer getBuffer() {
-	return buffer;
+public int getId() {
+	return id;
 }
 }

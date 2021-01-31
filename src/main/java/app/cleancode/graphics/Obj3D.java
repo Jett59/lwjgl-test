@@ -171,14 +171,18 @@ public void load(BufferedReader reader) throws IOException {
 		glBindVertexArray(vao);
 		for(int i = 0; i < numVbos; i++) {
 			VBO vbo = vbos.get(i);
-			glVertexAttribPointer(i, vbo.getElementSize(), GL_FLOAT, false, 0, vbo.getBuffer());
+			glBindBuffer(GL_ARRAY_BUFFER, vbo.getId());
+			glVertexAttribPointer(i, vbo.getElementSize(), GL_FLOAT, false, 0, 0);
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
 
 	private void createVbo(FloatBuffer buffer, int elementSize) {
-		vbos.add(new VBO(elementSize, buffer));
+		int vbo = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW);
+		vbos.add(new VBO(elementSize, vbo));
 		numVbos++;
 	}
 
